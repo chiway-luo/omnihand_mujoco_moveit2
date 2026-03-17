@@ -1,0 +1,60 @@
+# joint_limits.yaml allows the dynamics properties specified in the URDF to be overwritten or augmented as needed
+
+# For beginners, we downscale velocity and acceleration limits.
+# You can always specify higher scaling factors (<= 1.0) in your motion requests.  # Increase the values below to 1.0 to always move at maximum speed.
+default_velocity_scaling_factor: 0.1
+default_acceleration_scaling_factor: 0.1
+
+# Specific joint properties can be changed with the keys [max_position, min_position, max_velocity, max_acceleration]
+# Joint limits can be turned off with [has_velocity_limits, has_acceleration_limits]
+joint_limits:
+  L_index_abad_joint:
+    has_velocity_limits: true
+    max_velocity: 0.16400000000000001
+    has_acceleration_limits: false
+    max_acceleration: 0
+  L_index_pip_joint:
+    has_velocity_limits: true
+    max_velocity: 0.308
+    has_acceleration_limits: false
+    max_acceleration: 0
+  L_middle_pip_joint:
+    has_velocity_limits: true
+    max_velocity: 0.308
+    has_acceleration_limits: false
+    max_acceleration: 0
+  L_pinky_abad_joint:
+    has_velocity_limits: true
+    max_velocity: 0.16400000000000001
+    has_acceleration_limits: false
+    max_acceleration: 0
+  L_pinky_pip_joint:
+    has_velocity_limits: true
+    max_velocity: 0.308
+    has_acceleration_limits: false
+    max_acceleration: 0
+  L_ring_abad_joint:
+    has_velocity_limits: true
+    max_velocity: 0.16400000000000001
+    has_acceleration_limits: false
+    max_acceleration: 0
+  L_ring_pip_joint:
+    has_velocity_limits: true
+    max_velocity: 0.308
+    has_acceleration_limits: false
+    max_acceleration: 0
+  L_thumb_abad_joint:
+    has_velocity_limits: true
+    max_velocity: 0.16400000000000001
+    has_acceleration_limits: false
+    max_acceleration: 0
+  L_thumb_mcp_joint:
+    has_velocity_limits: true
+    max_velocity: 0.308
+    has_acceleration_limits: false
+    max_acceleration: 0
+  L_thumb_roll_joint:
+    has_velocity_limits: true
+    max_velocity: 0.16400000000000001
+    has_acceleration_limits: false
+    max_acceleration: 0

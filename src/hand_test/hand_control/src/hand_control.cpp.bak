@@ -1,0 +1,161 @@
+#include "rclcpp/rclcpp.hpp"
+#include "omnihand_node_msgs/msg/motor_angle.hpp" //关节电机角度控制
+#include "omnihand_node_msgs/msg/control_mode.hpp" //电机控制模式
+/*
+    需求:发布一个灵巧手的移动消息
+    流程:
+        1.包含头文件
+        2.初始化ros2客户端
+        3.自定义节点类
+            3-1
+            3-2
+            3-3
+        4.调用spin函数,并传入节点对象指针
+        5.释放资源
+
+    void SetAllActiveJointAngles(const std::vector<double>& angles);
+*/
+
+using namespace std::chrono_literals; //使用时间命名空间
+using namespace std::placeholders; //占位符命名空间
+
+class HandControl :public rclcpp::Node{
+public:
+    HandControl(std::string str1):Node(str1),last_time_(this->now()){
+        RCLCPP_INFO(this->get_logger(),"namesapce:  node: %s 节点创建成功",str1.c_str());
+        //创建电机控制方式发布方对象(仅发布一次)
+        // | `/agihand/omnihand/left/control_mode_cmd`  | 关节电机控制模式 |    订阅    | [omnihand_node_msgs.msg.ControlMode](#omnihand_node_msgs::msg::ControlMode) |
+        pub_control_mode = this->create_publisher<omnihand_node_msgs::msg::ControlMode>("/agihand/omnihand/left/control_mode_cmd",10);
+        control_mode_msg = std::make_shared<omnihand_node_msgs::msg::ControlMode>();
+        control_mode_msg->modes = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // 10个电机全部设为位置控制模式 //设置为关节角度控制模式
+        pub_control_mode->publish(*control_mode_msg); //发布控制模式消息
+
+        //创建发布方对象
+        //  `/agihand/omnihand/left/motor_angle_cmd`  | 关节电机角度 |    订阅    | [omnihand_node_msgs.msg.MotorAngle](#omnihand_node_msgs::msg::MotorAngle) | 
+        pub_ = this->create_publisher<omnihand_node_msgs::msg::MotorAngle>("/agihand/omnihand/left/motor_angle_cmd",10);
+        //创建定时器,周期1s
+        timer_ = this->create_wall_timer(1s,std::bind(&HandControl::callback_this,this));
+        //初始化消息
+        msg_ = std::make_shared<omnihand_node_msgs::msg::MotorAngle>();
+        angles_ = std::vector<double>(10, 0.0);
+        angles_resource_ = std::vector<double>(10, 0.0);
+
+        //抓握消息
+        angles_[0] = degree_to_radian(-18.44); // 1: thumb_roll
+        angles_[1] = degree_to_radian(52.60);  // 2: thumb_abad
+        angles_[2] = degree_to_radian(-28.96); // 3: thumb_mcp
+        angles_[3] = degree_to_radian(10.0);  // 4: index_abad
+        angles_[4] = degree_to_radian(30.0);  // 5: index_pip
+        angles_[5] = degree_to_radian(30.0);  // 6: middle_pip
+        angles_[6] = degree_to_radian(-5.0);  // 7: ring_abad
+        angles_[7] = degree_to_radian(30.0);  // 8: ring_pip
+        angles_[8] = degree_to_radian(-5.0);  // 9: pinky_abad
+        angles_[9] = degree_to_radian(30.0);  // 10: pinky_pip
+
+        //原始角度信息
+        // - -31.3066
+        // - 45.1246
+        // - -0.0003
+        // - 4.9171
+        // - 0.0
+        // - 0.0
+        // - -4.9320
+        // - 0.0
+        // - -5.4165
+        // - 0.0
+
+         /*
+            Left hand joint angle ranges (degrees):
+            1(thumb_roll):  -50 ~ 10    2(thumb_abad):  0 ~ 100
+            3(thumb_mcp):   -49 ~ 0     4(index_abad):  0 ~ 12
+            5(index_pip):    0 ~ 90     6(middle_pip):  0 ~ 90
+            7(ring_abad):  -10 ~ 0      8(ring_pip):    0 ~ 90
+            9(pinky_abad): -10 ~ 0     10(pinky_pip):   0 ~ 90
+        */
+        angles_resource_[0] = degree_to_radian(-30.0); // 1: thumb_roll
+        angles_resource_[1] = degree_to_radian(1.0);  // 2: thumb_abad
+        angles_resource_[2] = degree_to_radian(-0.0003); // 3: thumb_mcp
+        angles_resource_[3] = degree_to_radian(4.9171);  // 4: index_abad
+        angles_resource_[4] = degree_to_radian(0.0);  // 5: index_pip
+        angles_resource_[5] = degree_to_radian(0.0);  // 6: middle_pip
+        angles_resource_[6] = degree_to_radian(-4.9320);  // 7: ring_abad
+        angles_resource_[7] = degree_to_radian(0.0);  // 8: ring_pip
+        angles_resource_[8] = degree_to_radian(-5.4165);  // 9: pinky_abad
+        angles_resource_[9] = degree_to_radian(0.0);  // 10: pinky_pip
+    }
+
+private:
+    rclcpp::Publisher<omnihand_node_msgs::msg::MotorAngle>::SharedPtr pub_;
+    rclcpp::TimerBase::SharedPtr timer_;
+    //创建消息对象
+    std::vector<double> angles_;
+    std::vector<double> angles_resource_;
+    std::shared_ptr<omnihand_node_msgs::msg::MotorAngle> msg_ = std::make_shared<omnihand_node_msgs::msg::MotorAngle>();
+
+    std::shared_ptr<omnihand_node_msgs::msg::ControlMode> control_mode_msg;
+    rclcpp::Publisher<omnihand_node_msgs::msg::ControlMode>::SharedPtr pub_control_mode;
+
+    rclcpp::Time last_time_; //上次发布消息的时间
+    //回调函数
+    void callback_this(){
+        //定义分配电机的度数
+        /* 
+            序号	最小角度	最大角度
+                1	-50	10
+                2	0	100
+                3	-49	0
+                4	0	12
+                5	0	90
+                6	0	90
+                7	-10	0
+                8	0	90
+                9	-10	0
+                10	0	90
+        */
+
+        //抓握动作示例
+        // angles_[0] = degree_to_radian(-50.0); // 1: thumb_roll
+        // angles_[1] = degree_to_radian(100.0);  // 2: thumb_abad
+        // angles_[2] = degree_to_radian(-20.0); // 3: thumb_mcp
+        // angles_[3] = degree_to_radian(10.0);  // 4: index_abad
+        // angles_[4] = degree_to_radian(30.0);  // 5: index_pip
+        // angles_[5] = degree_to_radian(30.0);  // 6: middle_pip
+        // angles_[6] = degree_to_radian(-5.0);  // 7: ring_abad
+        // angles_[7] = degree_to_radian(30.0);  // 8: ring_pip
+        // angles_[8] = degree_to_radian(-5.0);  // 9: pinky_abad
+        // angles_[9] = degree_to_radian(30.0);  // 10: pinky_pip
+
+        msg_->angles = angles_; //设置消息中的角度数据
+        msg_->header.stamp = this->get_clock()->now(); //设置消息头的时间戳
+        msg_->header.frame_id = "angle_frame";
+
+        pub_control_mode->publish(*control_mode_msg); //发布控制模式消息
+
+        if (this->now().seconds() - last_time_.seconds() >= 2.0)
+        {
+            last_time_ = this->now();
+            //恢复原点
+            msg_->angles = angles_resource_; //设置消息中的角度数据  
+        }
+        
+        pub_->publish(*msg_); //发布消息
+    }
+
+    //创建角度转换弧度工具函数
+    double degree_to_radian(double degree){
+        return degree * M_PI / 180.0;
+    }
+};
+
+int main(int argc, char * argv[])
+{
+    //初始化ros2客户端
+    rclcpp::init(argc,argv);
+
+    //调用spin函数,使用自定义类对象指针
+    rclcpp::spin(std::make_shared<HandControl>("HandControl_node_cpp"));//node_name, (namespace可选)
+
+    //释放资源
+    rclcpp::shutdown();
+    return 0;
+}

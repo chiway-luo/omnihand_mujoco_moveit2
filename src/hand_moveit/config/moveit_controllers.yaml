@@ -1,0 +1,90 @@
+# MoveIt uses this configuration for controller management
+
+moveit_controller_manager: moveit_simple_controller_manager/MoveItSimpleControllerManager
+
+moveit_simple_controller_manager:
+  controller_names:
+    - thumb_controller
+    - index_controller
+    - middle_controller
+    - ring_controller
+    - little_controller
+    # - hand_controller
+
+  thumb_controller:
+    action_ns: follow_joint_trajectory
+    type: FollowJointTrajectory
+    joints:
+      - L_thumb_roll_joint
+      - L_thumb_abad_joint
+      - L_thumb_mcp_joint
+  index_controller:
+    action_ns: follow_joint_trajectory
+    type: FollowJointTrajectory
+    joints:
+      - L_index_abad_joint
+      - L_index_pip_joint
+  middle_controller:
+    action_ns: follow_joint_trajectory
+    type: FollowJointTrajectory
+    joints:
+      - L_middle_pip_joint
+  ring_controller:
+    action_ns: follow_joint_trajectory
+    type: FollowJointTrajectory
+    joints:
+      - L_ring_abad_joint
+      - L_ring_pip_joint
+  little_controller:
+    action_ns: follow_joint_trajectory
+    type: FollowJointTrajectory
+    joints:
+      - L_pinky_abad_joint
+      - L_pinky_pip_joint
+
+  # hand_controller:
+  #   action_ns: follow_joint_trajectory
+  #   type: FollowJointTrajectory
+  #   joints:
+  #     - L_index_abad_joint
+  #     - L_index_pip_joint
+  #     - L_middle_pip_joint
+  #     - L_pinky_abad_joint
+  #     - L_pinky_pip_joint
+  #     - L_ring_abad_joint
+  #     - L_ring_pip_joint
+  #     - L_thumb_roll_joint
+  #     - L_thumb_abad_joint
+  #     - L_thumb_mcp_joint
+
+
+
+
+
+
+
+
+
+
+# # MoveIt uses this configuration for controller management
+# moveit_controller_manager: moveit_simple_controller_manager/MoveItSimpleControllerManager
+
+# # 控制器配置必须放在顶层（不要嵌套在 moveit_simple_controller_manager: 下）
+# # 因为 MoveItSimpleControllerManager 插件直接读取裸参数名
+# controller_names:
+#   - hand_controller
+
+# hand_controller:
+#   action_ns: follow_joint_trajectory
+#   type: FollowJointTrajectory
+#   joints:
+#     - L_index_abad_joint
+#     - L_index_pip_joint
+#     - L_middle_pip_joint
+#     - L_pinky_abad_joint
+#     - L_pinky_pip_joint
+#     - L_ring_abad_joint
+#     - L_ring_pip_joint
+#     - L_thumb_roll_joint
+#     - L_thumb_abad_joint
+#     - L_thumb_mcp_joint

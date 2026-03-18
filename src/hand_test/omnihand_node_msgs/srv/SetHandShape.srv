@@ -1,4 +1,0 @@
-string shape_name # 手型名称
----
-bool success # 是否成功切换手型
-string message # 额外消息,如错误原因等

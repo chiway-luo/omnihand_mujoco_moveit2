@@ -1,0 +1,95 @@
+# This config file is used by ros2_control
+controller_manager:
+  ros__parameters:
+    update_rate: 100  # Hz
+
+    thumb_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    index_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    middle_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    ring_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    little_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    # hand_controller: # 包含所有手指的关节
+    #   type: joint_trajectory_controller/JointTrajectoryController
+
+
+    joint_state_broadcaster: # 这个控制器负责发布关节状态, 供 MoveIt 和其他节点使用
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+thumb_controller:
+  ros__parameters:
+    joints:
+      - L_thumb_roll_joint
+      - L_thumb_abad_joint
+      - L_thumb_mcp_joint
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+index_controller:
+  ros__parameters:
+    joints:
+      - L_index_abad_joint
+      - L_index_pip_joint
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+middle_controller:
+  ros__parameters:
+    joints:
+      - L_middle_pip_joint
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+ring_controller:
+  ros__parameters:
+    joints:
+      - L_ring_abad_joint
+      - L_ring_pip_joint
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+little_controller:
+  ros__parameters:
+    joints:
+      - L_pinky_abad_joint
+      - L_pinky_pip_joint
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+# hand_controller:
+#   ros__parameters:
+#     joints:
+#       - L_index_abad_joint
+#       - L_index_pip_joint
+#       - L_middle_pip_joint
+#       - L_pinky_abad_joint
+#       - L_pinky_pip_joint
+#       - L_ring_abad_joint
+#       - L_ring_pip_joint
+#       - L_thumb_roll_joint
+#       - L_thumb_abad_joint
+#       - L_thumb_mcp_joint
+#     command_interfaces:
+#       - position
+#     state_interfaces:
+#       - position
+#       - velocity

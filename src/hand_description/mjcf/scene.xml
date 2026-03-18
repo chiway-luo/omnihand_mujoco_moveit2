@@ -1,0 +1,39 @@
+<mujoco model="my_hand_scene">
+  <!-- <include file="my_hand.xml"/> -->
+
+  <visual>
+    <headlight diffuse="0.8 0.8 0.8" ambient="0.2 0.2 0.2" specular="0.1 0.1 0.1"/>
+  </visual>
+
+  <worldbody>
+    <light pos="0 0 2"/>
+  </worldbody>
+
+  <!-- Mimic joint equality constraints (SDK polynomial mapping) -->
+  <!-- polycoef="a0 a1 a2 a3 a4" => q1 = a0 + a1*q2 + a2*q2^2 + a3*q2^3 + a4*q2^4 -->
+  <equality>
+    <!-- thumb_mcp2pip: {0.0, 1.33} -->
+    <joint joint1="L_thumb_pip_joint" joint2="L_thumb_mcp_joint" polycoef="0 1.33 0 0 0"/>
+    <!-- thumb_mcp2dip(left): {0.0, 1.846, +0.853, 0.280} -->
+    <joint joint1="L_thumb_dip_joint" joint2="L_thumb_mcp_joint" polycoef="0 1.846 0.853 0.280 0"/>
+    <!-- finger_pip2dip: {0.0, 2.192, -1.425, 0.747, -0.167} -->
+    <joint joint1="L_index_dip_joint" joint2="L_index_pip_joint" polycoef="0 2.192 -1.425 0.747 -0.167"/>
+    <joint joint1="L_middle_dip_joint" joint2="L_middle_pip_joint" polycoef="0 2.192 -1.425 0.747 -0.167"/>
+    <joint joint1="L_ring_dip_joint" joint2="L_ring_pip_joint" polycoef="0 2.192 -1.425 0.747 -0.167"/>
+    <joint joint1="L_pinky_dip_joint" joint2="L_pinky_pip_joint" polycoef="0 2.192 -1.425 0.747 -0.167"/>
+  </equality>
+
+  <!-- 位置执行器：kp 为位置增益，让 ros2_control 通过 ctrl 写入目标位置 -->
+  <actuator>
+    <position name="thumb_roll_act"  joint="L_thumb_roll_joint"  kp="5"/>
+    <position name="thumb_abad_act"  joint="L_thumb_abad_joint"  kp="5"/>
+    <position name="thumb_mcp_act"   joint="L_thumb_mcp_joint"   kp="5"/>
+    <position name="index_abad_act"  joint="L_index_abad_joint"  kp="5"/>
+    <position name="index_pip_act"   joint="L_index_pip_joint"   kp="5"/>
+    <position name="middle_pip_act"  joint="L_middle_pip_joint"  kp="5"/>
+    <position name="ring_abad_act"   joint="L_ring_abad_joint"   kp="5"/>
+    <position name="ring_pip_act"    joint="L_ring_pip_joint"    kp="5"/>
+    <position name="pinky_abad_act"  joint="L_pinky_abad_joint"  kp="5"/>
+    <position name="pinky_pip_act"   joint="L_pinky_pip_joint"   kp="5"/>
+  </actuator>
+</mujoco>

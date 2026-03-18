@@ -1,0 +1,190 @@
+<mujoco model="omnihand_left">
+  <compiler angle="radian" meshdir="../meshes/" autolimits="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81"/>
+
+  <default>
+    <joint damping="0.01"/>
+    <geom friction="1 0.005 0.001" condim="4"/>
+  </default>
+
+  <asset>
+    <mesh name="l_palm" file="l_palm.STL"/>
+    <mesh name="l_thumb_roll" file="l_thumb_roll.STL"/>
+    <mesh name="thumb_abad" file="thumb_abad.STL"/>
+    <mesh name="thumb_mcp" file="thumb_mcp.STL"/>
+    <mesh name="thumb_pip" file="thumb_pip.STL"/>
+    <mesh name="thumb_dip" file="thumb_dip.STL"/>
+    <mesh name="finger_abad" file="finger_abad.STL"/>
+    <mesh name="finger_pip" file="finger_pip.STL"/>
+    <mesh name="finger_dip" file="finger_dip.STL"/>
+  </asset>
+
+  <worldbody>
+    <body name="base_link" pos="0 0 0">
+      <!-- L_palm (fixed to base_link) -->
+      <body name="L_palm" pos="0 0 0">
+        <inertial pos="0.0035098 -0.0445331 -0.0066051" mass="0.1594"
+                  fullinertia="0.0001025 9.973e-05 0.00015087 3.1e-06 9.7e-07 8.3e-07"/>
+        <geom type="mesh" mesh="l_palm" rgba="0.914 0.914 0.847 1"/>
+
+        <!-- ========== Thumb chain ========== -->
+        <body name="L_thumb_roll" pos="0 -0.018521 0.047551">
+          <inertial pos="-0.003851 0.000311 0.008401" mass="0.025"
+                    fullinertia="2.86e-06 2.01e-06 3.69e-06 0 3e-08 -5e-08"/>
+          <joint name="L_thumb_roll_joint" type="hinge" axis="1 0 0" range="-0.8727 0.1745"/>
+          <geom type="mesh" mesh="l_thumb_roll" rgba="0 0 0.8 1"/>
+
+          <body name="L_thumb_abad" pos="0.020801 -0.004292 -0.00052506">
+            <inertial pos="-1.2e-06 -0.0129928 -0.0041829" mass="0.0056"
+                      fullinertia="1.03e-06 8.8e-07 5.2e-07 0 0 6e-08"/>
+            <joint name="L_thumb_abad_joint" type="hinge" axis="0 0 1" range="0 1.7453"/>
+            <geom type="mesh" mesh="thumb_abad" euler="0 0 3.14159265" rgba="0 0 0.8 1"/>
+
+            <body name="L_thumb_mcp" pos="0 -0.0265 -0.005275">
+              <inertial pos="-1.83e-05 -0.0225829 0.0024013" mass="0.0511"
+                        fullinertia="1.274e-05 4.72e-06 1.121e-05 1e-08 0 2.8e-07"/>
+              <joint name="L_thumb_mcp_joint" type="hinge" axis="1 0 0" range="-0.8552 0"/>
+              <geom type="mesh" mesh="thumb_mcp" euler="0 0 3.14159265" rgba="0.871 0.812 0.765 1"/>
+
+              <body name="L_thumb_pip" pos="0 -0.036231 0.0036755">
+                <inertial pos="-1e-06 -0.014461 -0.00415" mass="0.011"
+                          fullinertia="1.34e-06 7.9e-07 1.31e-06 0 0 -7e-08"/>
+                <joint name="L_thumb_pip_joint" type="hinge" axis="1 0 0" range="-1.14 0"/>
+                <geom type="mesh" mesh="thumb_pip" euler="0 0 3.14159265" rgba="1 1 1 1"/>
+
+                <body name="L_thumb_dip" pos="0 -0.026468 -0.0073106">
+                  <inertial pos="-3e-06 -0.010392 -0.001614" mass="0.007"
+                            fullinertia="5.2e-07 3.3e-07 4.4e-07 0 0 1.6e-07"/>
+                  <joint name="L_thumb_dip_joint" type="hinge" axis="1 0 0" range="-1.22 0"/>
+                  <geom type="mesh" mesh="thumb_dip" euler="0 0 3.14159265" rgba="1 1 1 1"/>
+
+                  <site name="L_thumb_tip" pos="0 -0.02392 -0.01158" size="0.001" rgba="1 1 1 1"/>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+
+        <!-- ========== Index finger chain ========== -->
+        <body name="L_index_abad" pos="0 -0.02695 0.094548">
+          <inertial pos="-0.0018959 -9.8e-06 0.0066855" mass="0.04"
+                    fullinertia="7.37e-06 8.82e-06 2.65e-06 0 -1.4e-07 0"/>
+          <joint name="L_index_abad_joint" type="hinge" axis="1 0 0" range="0 0.2094"/>
+          <geom type="mesh" mesh="finger_abad" rgba="0 0.8 0 1"/>
+
+          <body name="L_index_pip" pos="0.00048163 0 0.017575">
+            <inertial pos="-0.002884 1.5e-06 0.019997" mass="0.004"
+                      fullinertia="7e-07 6.8e-07 2.6e-07 0 1e-08 0"/>
+            <joint name="L_index_pip_joint" type="hinge" axis="0 1 0" range="0 1.5708"/>
+            <geom type="mesh" mesh="finger_pip" rgba="0.871 0.812 0.765 1"/>
+
+            <body name="L_index_dip" pos="-0.0015 0 0.036">
+              <inertial pos="0.000618 0 0.019239" mass="0.003"
+                        fullinertia="4e-07 4e-07 1.2e-07 0 0 0"/>
+              <joint name="L_index_dip_joint" type="hinge" axis="0 1 0" range="0 2.03"/>
+              <geom type="mesh" mesh="finger_dip" rgba="1 0.424 0.039 1"/>
+
+              <site name="L_index_tip" pos="-0.0011 0 0.03612" size="0.001" rgba="1 1 1 1"/>
+            </body>
+          </body>
+        </body>
+
+        <!-- ========== Middle finger chain (abad is fixed) ========== -->
+        <body name="L_middle_abad" pos="-0.0025 -0.00795 0.096548">
+          <inertial pos="-0.0018959 -9.8e-06 0.0066855" mass="0.04"
+                    fullinertia="7.37e-06 8.82e-06 2.65e-06 0 -1.4e-07 0"/>
+          <geom type="mesh" mesh="finger_abad" rgba="0 0.8 0 1"/>
+
+          <body name="L_middle_pip" pos="0.00048163 0 0.017575">
+            <inertial pos="-0.002884 1.5e-06 0.019997" mass="0.004"
+                      fullinertia="7e-07 6.8e-07 2.6e-07 0 1e-08 0"/>
+            <joint name="L_middle_pip_joint" type="hinge" axis="0 1 0" range="0 1.5708"/>
+            <geom type="mesh" mesh="finger_pip" rgba="0.871 0.812 0.765 1"/>
+
+            <body name="L_middle_dip" pos="-0.0015 0 0.036">
+              <inertial pos="0.000618 0 0.019239" mass="0.003"
+                        fullinertia="4e-07 4e-07 1.2e-07 0 0 0"/>
+              <joint name="L_middle_dip_joint" type="hinge" axis="0 1 0" range="0 2.03"/>
+              <geom type="mesh" mesh="finger_dip" rgba="1 0.424 0.039 1"/>
+
+              <site name="L_middle_tip" pos="-0.0011 0 0.03612" size="0.001" rgba="1 1 1 1"/>
+            </body>
+          </body>
+        </body>
+
+        <!-- ========== Ring finger chain ========== -->
+        <body name="L_ring_abad" pos="-0.00151 0.01105 0.094548">
+          <inertial pos="-0.0018959 -9.8e-06 0.0066855" mass="0.04"
+                    fullinertia="7.37e-06 8.82e-06 2.65e-06 0 -1.4e-07 0"/>
+          <joint name="L_ring_abad_joint" type="hinge" axis="1 0 0" range="-0.1745 0"/>
+          <geom type="mesh" mesh="finger_abad" rgba="0 0.8 0 1"/>
+
+          <body name="L_ring_pip" pos="0.00048163 0 0.017575">
+            <inertial pos="-0.002884 1.5e-06 0.019997" mass="0.004"
+                      fullinertia="7e-07 6.8e-07 2.6e-07 0 1e-08 0"/>
+            <joint name="L_ring_pip_joint" type="hinge" axis="0 1 0" range="0 1.5708"/>
+            <geom type="mesh" mesh="finger_pip" rgba="0.871 0.812 0.765 1"/>
+
+            <body name="L_ring_dip" pos="-0.0015 0 0.036">
+              <inertial pos="0.000618 0 0.019239" mass="0.003"
+                        fullinertia="4e-07 4e-07 1.2e-07 0 0 0"/>
+              <joint name="L_ring_dip_joint" type="hinge" axis="0 1 0" range="0 2.03"/>
+              <geom type="mesh" mesh="finger_dip" rgba="1 0.424 0.039 1"/>
+
+              <site name="L_ring_tip" pos="-0.0011 0 0.03612" size="0.001" rgba="1 1 1 1"/>
+            </body>
+          </body>
+        </body>
+
+        <!-- ========== Pinky finger chain ========== -->
+        <body name="L_pinky_abad" pos="0 0.03005 0.089548">
+          <inertial pos="-0.0018959 -9.8e-06 0.0066855" mass="0.04"
+                    fullinertia="7.37e-06 8.82e-06 2.65e-06 0 -1.4e-07 0"/>
+          <joint name="L_pinky_abad_joint" type="hinge" axis="1 0 0" range="-0.1745 0"/>
+          <geom type="mesh" mesh="finger_abad" rgba="0 0.8 0 1"/>
+
+          <body name="L_pinky_pip" pos="0.00048163 0 0.017575">
+            <inertial pos="-0.002884 1.5e-06 0.019997" mass="0.004"
+                      fullinertia="7e-07 6.8e-07 2.6e-07 0 1e-08 0"/>
+            <joint name="L_pinky_pip_joint" type="hinge" axis="0 1 0" range="0 1.5708"/>
+            <geom type="mesh" mesh="finger_pip" rgba="0.871 0.812 0.765 1"/>
+
+            <body name="L_pinky_dip" pos="-0.0015 0 0.036">
+              <inertial pos="0.000618 0 0.019239" mass="0.003"
+                        fullinertia="4e-07 4e-07 1.2e-07 0 0 0"/>
+              <joint name="L_pinky_dip_joint" type="hinge" axis="0 1 0" range="0 2.03"/>
+              <geom type="mesh" mesh="finger_dip" rgba="1 0.424 0.039 1"/>
+
+              <site name="L_pinky_tip" pos="-0.0011 0 0.03612" size="0.001" rgba="1 1 1 1"/>
+            </body>
+          </body>
+        </body>
+
+      </body>
+    </body>
+  </worldbody>
+
+  <!-- Mimic joint equality constraints -->
+  <equality>
+    <joint joint1="L_thumb_pip_joint" joint2="L_thumb_mcp_joint" polycoef="0 1.33 0 0 0"/>
+    <joint joint1="L_thumb_dip_joint" joint2="L_thumb_mcp_joint" polycoef="0 1.42 0 0 0"/>
+    <joint joint1="L_index_dip_joint" joint2="L_index_pip_joint" polycoef="0 1.29 0 0 0"/>
+    <joint joint1="L_middle_dip_joint" joint2="L_middle_pip_joint" polycoef="0 1.29 0 0 0"/>
+    <joint joint1="L_ring_dip_joint" joint2="L_ring_pip_joint" polycoef="0 1.29 0 0 0"/>
+    <joint joint1="L_pinky_dip_joint" joint2="L_pinky_pip_joint" polycoef="0 1.29 0 0 0"/>
+  </equality>
+
+  <!-- Position actuators (matching ros2_control joints) -->
+  <actuator>
+    <position name="L_thumb_roll_act" joint="L_thumb_roll_joint" kp="50" ctrlrange="-0.8727 0.1745"/>
+    <position name="L_thumb_abad_act" joint="L_thumb_abad_joint" kp="50" ctrlrange="0 1.7453"/>
+    <position name="L_thumb_mcp_act" joint="L_thumb_mcp_joint" kp="50" ctrlrange="-0.8552 0"/>
+    <position name="L_index_abad_act" joint="L_index_abad_joint" kp="50" ctrlrange="0 0.2094"/>
+    <position name="L_index_pip_act" joint="L_index_pip_joint" kp="50" ctrlrange="0 1.5708"/>
+    <position name="L_middle_pip_act" joint="L_middle_pip_joint" kp="50" ctrlrange="0 1.5708"/>
+    <position name="L_ring_abad_act" joint="L_ring_abad_joint" kp="50" ctrlrange="-0.1745 0"/>
+    <position name="L_ring_pip_act" joint="L_ring_pip_joint" kp="50" ctrlrange="0 1.5708"/>
+    <position name="L_pinky_abad_act" joint="L_pinky_abad_joint" kp="50" ctrlrange="-0.1745 0"/>
+    <position name="L_pinky_pip_act" joint="L_pinky_pip_joint" kp="50" ctrlrange="0 1.5708"/>
+  </actuator>
+</mujoco>

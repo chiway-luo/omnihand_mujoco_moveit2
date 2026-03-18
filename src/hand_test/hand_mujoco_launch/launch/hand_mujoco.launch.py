@@ -42,6 +42,7 @@ from ament_index_python.packages import get_package_share_directory
 # 组件相关-------------
 # from launch_ros.actions import ComposableNodeContainer
 # from launch_ros.descriptions import ComposableNode
+from launch_ros.actions import SetParameter
 from moveit_configs_utils import MoveItConfigsBuilder #从moveit_configs_utils包中导入MoveItConfigsBuilder类，用于加载MoveIt配置
 
 def create_nodes(context):
@@ -132,10 +133,30 @@ def create_nodes(context):
         executable="spawner",
         arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
     )
-    hand_controller = Node(
+    thumb_controller = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["hand_controller", "--controller-manager", "/controller_manager"],
+        arguments=["thumb_controller", "--controller-manager", "/controller_manager"],
+    )
+    index_controller = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["index_controller", "--controller-manager", "/controller_manager"],
+    )
+    middle_controller = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["middle_controller", "--controller-manager", "/controller_manager"],
+    )
+    ring_controller = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["ring_controller", "--controller-manager", "/controller_manager"],
+    )
+    little_controller = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["little_controller", "--controller-manager", "/controller_manager"],
     )
 
     # RViz
@@ -161,8 +182,11 @@ def create_nodes(context):
             on_start=[
                 LogInfo(msg="Starting controllers..."),
                 load_joint_state_broadcaster,
-                hand_controller,
-                # rviz_node,
+                thumb_controller,
+                index_controller,
+                middle_controller,
+                ring_controller,
+                little_controller,
             ],
         )
     )
@@ -177,6 +201,9 @@ def create_nodes(context):
 
 def generate_launch_description():
     ld = LaunchDescription()
+
+    # 全局设置 use_sim_time，所有节点都使用仿真时钟
+    ld.add_action(SetParameter(name="use_sim_time", value=True))
 
 
     # 参数声明
@@ -240,12 +267,12 @@ def generate_launch_description():
     )
 
     # =========== 9. hand_shape 手型改变节点========
-    # hand_shape_launch = IncludeLaunchDescription(
-    #     launch_description_source=PythonLaunchDescriptionSource(
-    #         os.path.join(get_package_share_directory("hand_shape"), "launch", "hand_shape.launch.py")
-    #     )
-    # )
-    # ld.add_action(hand_shape_launch)
+    hand_shape_launch = IncludeLaunchDescription(
+        launch_description_source=PythonLaunchDescriptionSource(
+            os.path.join(get_package_share_directory("hand_shape"), "launch", "hand_shape.launch.py")
+        )
+    )
+    ld.add_action(hand_shape_launch)
 
     return ld
 

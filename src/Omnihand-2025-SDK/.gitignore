@@ -1,9 +1,0 @@
-# Build and IDE
-.vscode/
-.cache/
-.marscode/
-.idea/
-_deps/
-build/
-cmake-build*/
-compile_commands.json

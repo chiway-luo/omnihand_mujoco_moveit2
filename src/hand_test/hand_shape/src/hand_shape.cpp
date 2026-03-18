@@ -16,8 +16,7 @@
         2. 创建服务端对象,等待客户端调用服务来切换手型,服务回调函数中设置一个标志位,通知主线程执行规划
         3. 当 current_shape 被修改时, 查找对应预设角度, 通过 MoveGroupInterface 规划并执行
     使用:
-        ros2 param set /hand_shape current_shape catch    # 切换到"抓握"手型
-        ros2 param set /hand_shape current_shape default   # 切换到"张开"手型
+        ros2 service call /hand_shape/set_shape omnihand_node_msgs/srv/SetHandShape "{shape_name: catch}"
 
     增加: 电机堵转检测,如果堵转,则停止发送指令,
         存储上n帧数据,回溯目标位置,发送回退指令,让机械手回退到未堵转位置,发送error日志,等待下一次请求

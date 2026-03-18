@@ -1,0 +1,16 @@
+.idea/
+.vscode/
+.cache/
+__pycache__/
+*/build/
+cmake-build-debug/
+*/old/
+*/__pycache__/
+venv/
+docs/html
+docs/man
+doc/
+compile_commands.json
+build/
+*.bak/
+paper/jats/

@@ -1,7 +1,5 @@
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/joint_state.hpp"
-#include "omnihand_node_msgs/msg/motor_angle.hpp"
-#include "omnihand_node_msgs/msg/control_mode.hpp"
 #include <cmath>
 /*
     工作流程:
@@ -46,25 +44,17 @@ public:
             "L_pinky_abad_joint", "L_pinky_pip_joint", "L_pinky_dip_joint",
         };
 
-        // 发布控制模式（全部设为位置控制 = 0）
-        pub_control_mode_ = this->create_publisher<omnihand_node_msgs::msg::ControlMode>(
-            "/agihand/omnihand/left/control_mode_cmd", 10);
 
-        // 延迟重复发送控制模式，等待驱动订阅者连接后确保收到
-        timer_control_mode_ = this->create_wall_timer(
-            std::chrono::milliseconds(500),
-            std::bind(&HandControl::send_control_mode, this));
-
-        // 发布电机角度指令（转发 MoveIt 轨迹到真实驱动）10关节
-        pub_motor_angle_ = this->create_publisher<omnihand_node_msgs::msg::MotorAngle>(
+        // 发布 mujoco 角度 指令（转发 MoveIt 轨迹到mujoco）10关节
+        pub_motor_angle_ = this->create_publisher<sensor_msgs::msg::JointState>(
             "/agihand/omnihand/left/motor_angle_cmd", 10);
 
         // 发布真实关节状态给 MoveIt + robot_state_publisher 16关节
         pub_joint_states_ = this->create_publisher<sensor_msgs::msg::JointState>(
             "/joint_states", 10);
 
-        // 订阅灵巧手驱动反馈（真实关节角度 100Hz） 10关节
-        sub_motor_angle_ = this->create_subscription<omnihand_node_msgs::msg::MotorAngle>(
+        // 订阅mujoco 反馈（真实关节角度 100Hz） 10关节
+        sub_motor_angle_ = this->create_subscription<sensor_msgs::msg::JointState>(
             "/agihand/omnihand/left/motor_angle", 10,
             std::bind(&HandControl::motor_angle_callback, this, _1));
 
@@ -89,10 +79,10 @@ public:
 private:
     std::unordered_map<std::string, int> joint_index_map_;// MoveIt 关节名 → MotorAngle.angles[] 索引
     std::vector<std::string> all_joint_names_;// 全部16个关节名（10主动 + 6 mimic）
-    rclcpp::Publisher<omnihand_node_msgs::msg::ControlMode>::SharedPtr pub_control_mode_;// 发布控制模式
-    rclcpp::Publisher<omnihand_node_msgs::msg::MotorAngle>::SharedPtr pub_motor_angle_;//发布电机角度指令
+    rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr pub_control_mode_;// 发布控制模式
+    rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr pub_motor_angle_;//发布电机角度指令
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr pub_joint_states_;//发布关节状态
-    rclcpp::Subscription<omnihand_node_msgs::msg::MotorAngle>::SharedPtr sub_motor_angle_;//订阅驱动反馈的关节角度
+    rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr sub_motor_angle_;//订阅驱动反馈的关节角度
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr sub_controller_states_;//订阅 MoveIt fake controller 输出的轨迹指令
     rclcpp::TimerBase::SharedPtr timer_republish_;// 定时器：周期性重发 /joint_states，防止驱动断更导致 MoveIt 超时
     rclcpp::TimerBase::SharedPtr timer_control_mode_;// 定时器：周期性发送控制模式，确保驱动收到
@@ -107,41 +97,20 @@ private:
     sensor_msgs::msg::JointState js_msg_; // 关节状态消息对象，避免每次回调都重新创建
 
 
-    // 定时发送控制模式，等订阅者连接后确保驱动收到
-    void send_control_mode() {
-        auto mode_msg = omnihand_node_msgs::msg::ControlMode();
-        mode_msg.modes = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-        pub_control_mode_->publish(mode_msg);
-        control_mode_send_count_++;
-        RCLCPP_INFO(this->get_logger(), "发送控制模式 (位置控制), 第 %d 次", control_mode_send_count_);
-
-        // 订阅者已连接且已发送足够次数后停止
-        //get_subscription_count() 只能反映当前订阅者数量，无法区分是否已连接过，所以设置发送次数阈值确保驱动至少收到几次
-        if (pub_control_mode_->get_subscription_count() > 0 && control_mode_send_count_ >= 3) {
-            RCLCPP_INFO(this->get_logger(), "驱动已连接，控制模式设置完成");
-            timer_control_mode_->cancel();
-        }
-        // 最多重试 20 次（10 秒）防止无限重发
-        else if (control_mode_send_count_ >= 20) {
-            RCLCPP_WARN(this->get_logger(), "控制模式发送已达上限，驱动可能未连接");
-            timer_control_mode_->cancel();//停止发送控制模式，避免无意义的重试
-        }
-    }
-
     // 驱动反馈回调：真实关节 → /joint_states（MoveIt 碰撞检测 + TF 可视化）消息,不发布指令
-    void motor_angle_callback(const omnihand_node_msgs::msg::MotorAngle::SharedPtr msg) {
-        if (msg->angles.size() < 10) return;
+    void motor_angle_callback(const sensor_msgs::msg::JointState::SharedPtr msg) {
+        if (msg->position.size() < 10) return;
 
-        double thumb_roll = msg->angles[0];
-        double thumb_abad = msg->angles[1];
-        double thumb_mcp  = msg->angles[2];
-        double index_abad = msg->angles[3];
-        double index_pip  = msg->angles[4];
-        double middle_pip = msg->angles[5];
-        double ring_abad  = msg->angles[6];
-        double ring_pip   = msg->angles[7];
-        double pinky_abad = msg->angles[8];
-        double pinky_pip  = msg->angles[9];
+        double thumb_roll = msg->position[0];
+        double thumb_abad = msg->position[1];
+        double thumb_mcp  = msg->position[2];
+        double index_abad = msg->position[3];
+        double index_pip  = msg->position[4];
+        double middle_pip = msg->position[5];
+        double ring_abad  = msg->position[6];
+        double ring_pip   = msg->position[7];
+        double pinky_abad = msg->position[8];
+        double pinky_pip  = msg->position[9];
 
         // SDK 多项式计算被动关节（kinematics_solver.cc: GetAllJointPos / CalculatePower）
         // 线性近似（已弃用，仅作参考）：
@@ -249,21 +218,21 @@ private:
                 "驱动已掉线，忽略轨迹指令。请重启灵巧手驱动。");
             return;
         }
-        omnihand_node_msgs::msg::MotorAngle motor_msg;
+        sensor_msgs::msg::JointState motor_msg;
         motor_msg.header.stamp = this->get_clock()->now();
         motor_msg.header.frame_id = "angle_frame";
-        motor_msg.angles.resize(10, 0.0);
+        motor_msg.position.resize(10, 0.0);
 
         for (size_t i = 0; i < msg->name.size(); ++i) {
             auto it = joint_index_map_.find(msg->name[i]);
             if (it != joint_index_map_.end()) {
-                motor_msg.angles[it->second] = msg->position[i];
+                motor_msg.position[it->second] = msg->position[i];
             }
         }
 
         //判断是否已经收到过关节的状态数据,如果没有收到过,说明还没有建立起与驱动的通信,此时不转发指令,避免发送无效指令导致驱动异常
         if (!has_joint_data_) {
-                last_cmd_angles_ = motor_msg.angles;
+                last_cmd_angles_ = motor_msg.position;
                 return;  // 驱动未连接，等待
         }
         // 门控机制：等待 fake controller 内部状态与真实手位置对齐后再开放转发
@@ -284,7 +253,7 @@ private:
             for (const auto& [name, motor_idx] : joint_index_map_) {
                 for (size_t j = 0; j < all_joint_names_.size(); ++j) {
                     if (all_joint_names_[j] == name) {
-                        if (std::abs(motor_msg.angles[motor_idx] - cached_positions_[j]) > 0.1) {
+                        if (std::abs(motor_msg.position[motor_idx] - cached_positions_[j]) > 0.1) {
                             all_close = false;
                         }
                         break;
@@ -292,7 +261,7 @@ private:
                 }
                 if (!all_close) break;
             }
-            last_cmd_angles_ = motor_msg.angles;  // 始终跟踪，避免对齐后第一帧 diff 过大
+            last_cmd_angles_ = motor_msg.position;  // 始终跟踪，避免对齐后第一帧 diff 过大
             if (all_close) {
                 gate_open_ = true;
                 RCLCPP_INFO(this->get_logger(),
@@ -305,20 +274,20 @@ private:
         bool changed = false;
         double diff;
         for (int i = 0; i < 10; ++i) {
-            diff = std::abs(motor_msg.angles[i] - last_cmd_angles_[i]);
+            diff = std::abs(motor_msg.position[i] - last_cmd_angles_[i]);
             if (diff > 0.001) {
                 changed = true;
                 break;
             }
         }
         if (!changed){
-            last_cmd_angles_ = motor_msg.angles; // 更新基准，防止后续微小变化被忽略
+            last_cmd_angles_ = motor_msg.position; // 更新基准，防止后续微小变化被忽略
             return;
         }   // 静态重复消息，跳过
 
         // RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500,
         //     "转发轨迹指令 → 驱动 (最大变化: 关节[%d] %.4f rad)", max_diff_idx, max_diff);
-        last_cmd_angles_ = motor_msg.angles;
+        last_cmd_angles_ = motor_msg.position;
         pub_motor_angle_->publish(motor_msg);
     }
 

@@ -54,15 +54,9 @@
       <material name="silver"/>
     </visual>
     <collision>
-      <origin rpy="0 0 0" xyz="0 0 0.00725"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.0145" radius="0.028"/>
-      </geometry>
-    </collision>
-    <collision>
-      <origin rpy="0 0 0" xyz="0 0 0.057"/>
-      <geometry>
-        <box size="0.04 0.082 0.085"/>
+        <mesh filename="package://hand_description/meshes/l_palm.STL"/>
       </geometry>
     </collision>
     <inertial>
@@ -130,9 +124,9 @@
       <material name="brown"/>
     </visual>
     <collision>
-      <origin rpy="0 0 0" xyz="0 -0.0065 0.00237"/>
+      <origin rpy="0 0 3.14" xyz="0 0 0"/>
       <geometry>
-        <box size="0.029 0.042 0.0325"/>
+        <mesh filename="package://hand_description/meshes/thumb_mcp.STL"/>
       </geometry>
     </collision>
     <inertial>
@@ -146,7 +140,7 @@
     <parent link="L_thumb_mcp"/>
     <child link="L_thumb_pip"/>
     <axis xyz="1 0 0"/>
-    <limit effort="1.764" lower="-1.1344640137963142" upper="0" velocity="0.308"/>
+    <limit effort="1.764" lower="-1.14" upper="0" velocity="0.308"/>
     <mimic joint="L_thumb_mcp_joint" multiplier="1.33" offset="0"/>
   </joint>
   <link name="L_thumb_pip">
@@ -158,9 +152,9 @@
       <material name="white"/>
     </visual>
     <collision>
-      <origin rpy="0.2 0 0" xyz="0 -0.0116 -0.0032"/>
+      <origin rpy="0 0 3.14" xyz="0 0 0"/>
       <geometry>
-        <box size="0.019 0.035 0.0225"/>
+        <mesh filename="package://hand_description/meshes/thumb_pip.STL"/>
       </geometry>
     </collision>
     <inertial>
@@ -174,8 +168,8 @@
     <parent link="L_thumb_pip"/>
     <child link="L_thumb_dip"/>
     <axis xyz="1 0 0"/>
-    <limit effort="1.764" lower="-1.1344640137963142" upper="0" velocity="0.308"/>
-    <mimic joint="L_thumb_mcp_joint" multiplier="1.3" offset="0"/>
+    <limit effort="1.764" lower="-1.22" upper="0" velocity="0.308"/>
+    <mimic joint="L_thumb_mcp_joint" multiplier="1.42" offset="0" />
   </joint>
   <link name="L_thumb_dip">
     <visual>
@@ -186,9 +180,9 @@
       <material name="white"/>
     </visual>
     <collision>
-      <origin rpy="1.8 0 0" xyz="0 -0.0134 -0.0026"/>
+      <origin rpy="0 0 3.14" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.023" radius="0.011"/>
+        <mesh filename="package://hand_description/meshes/thumb_dip.STL"/>
       </geometry>
     </collision>
     <inertial>
@@ -251,9 +245,9 @@
       <material name="brown"/>
     </visual>
     <collision>
-      <origin rpy="0 0 0" xyz="0 0 0.014"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.044" radius="0.01"/>
+        <mesh filename="package://hand_description/meshes/finger_pip.STL"/>
       </geometry>
     </collision>
     <inertial>
@@ -267,8 +261,8 @@
     <parent link="L_index_pip"/>
     <child link="L_index_dip"/>
     <axis xyz="0 1 0"/>
-    <limit effort="1.764" lower="0" upper="1.8325957145940461" velocity="0.308"/>
-    <mimic joint="L_index_pip_joint" multiplier="1.097" offset="0"/>
+    <limit effort="1.764" lower="0" upper="2.03" velocity="0.308"/>
+    <mimic joint="L_index_pip_joint" multiplier="1.29" offset="0"/>
   </joint>
   <link name="L_index_dip">
     <visual>
@@ -279,9 +273,9 @@
       <material name="orange"/>
     </visual>
     <collision>
-      <origin rpy="0 0 0" xyz="0 0 0.018"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.034" radius="0.007"/>
+        <mesh filename="package://hand_description/meshes/finger_dip.STL"/>
       </geometry>
     </collision>
     <inertial>
@@ -341,9 +335,9 @@
       <material name="brown"/>
     </visual>
     <collision>
-      <origin rpy="0 0 0" xyz="0 0 0.014"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.044" radius="0.01"/>
+        <mesh filename="package://hand_description/meshes/finger_pip.STL"/>
       </geometry>
     </collision>
     <inertial>
@@ -357,8 +351,8 @@
     <parent link="L_middle_pip"/>
     <child link="L_middle_dip"/>
     <axis xyz="0 1 0"/>
-    <limit effort="1.764" lower="0" upper="1.8325957145940461" velocity="0.308"/>
-    <mimic joint="L_middle_pip_joint" multiplier="1.097" offset="0"/>
+    <limit effort="1.764" lower="0" upper="2.03" velocity="0.308"/>
+    <mimic joint="L_middle_pip_joint" multiplier="1.29" offset="0"/>
   </joint>
   <link name="L_middle_dip">
     <visual>
@@ -369,9 +363,9 @@
       <material name="orange"/>
     </visual>
     <collision>
-      <origin rpy="0 0 0" xyz="0 0 0.018"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.034" radius="0.007"/>
+        <mesh filename="package://hand_description/meshes/finger_dip.STL"/>
       </geometry>
     </collision>
     <inertial>
@@ -433,9 +427,9 @@
       <material name="brown"/>
     </visual>
     <collision>
-      <origin rpy="0 0 0" xyz="0 0 0.014"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.044" radius="0.01"/>
+        <mesh filename="package://hand_description/meshes/finger_pip.STL"/>
       </geometry>
     </collision>
     <inertial>
@@ -449,8 +443,8 @@
     <parent link="L_ring_pip"/>
     <child link="L_ring_dip"/>
     <axis xyz="0 1 0"/>
-    <limit effort="1.764" lower="0" upper="1.8325957145940461" velocity="0.308"/>
-    <mimic joint="L_ring_pip_joint" multiplier="1.097" offset="0"/>
+    <limit effort="1.764" lower="0" upper="2.03" velocity="0.308"/>
+    <mimic joint="L_ring_pip_joint" multiplier="1.29" offset="0"/>
   </joint>
   <link name="L_ring_dip">
     <visual>
@@ -461,9 +455,9 @@
       <material name="orange"/>
     </visual>
     <collision>
-      <origin rpy="0 0 0" xyz="0 0 0.018"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.034" radius="0.007"/>
+        <mesh filename="package://hand_description/meshes/finger_dip.STL"/>
       </geometry>
     </collision>
     <inertial>
@@ -525,9 +519,9 @@
       <material name="brown"/>
     </visual>
     <collision>
-      <origin rpy="0 0 0" xyz="0 0 0.014"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.044" radius="0.01"/>
+        <mesh filename="package://hand_description/meshes/finger_pip.STL"/>
       </geometry>
     </collision>
     <inertial>
@@ -541,8 +535,8 @@
     <parent link="L_pinky_pip"/>
     <child link="L_pinky_dip"/>
     <axis xyz="0 1 0"/>
-    <limit effort="1.764" lower="0" upper="1.8325957145940461" velocity="0.308"/>
-    <mimic joint="L_pinky_pip_joint" multiplier="1.097" offset="0"/>
+    <limit effort="1.764" lower="0" upper="2.03" velocity="0.308"/>
+    <mimic joint="L_pinky_pip_joint" multiplier="1.29" offset="0"/>
   </joint>
   <link name="L_pinky_dip">
     <visual>
@@ -553,9 +547,9 @@
       <material name="orange"/>
     </visual>
     <collision>
-      <origin rpy="0 0 0" xyz="0 0 0.018"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="0.034" radius="0.007"/>
+        <mesh filename="package://hand_description/meshes/finger_dip.STL"/>
       </geometry>
     </collision>
     <inertial>
@@ -578,4 +572,79 @@
       <material name="white"/>
     </visual>
   </link>
+
+  <!-- ros2 control -->
+  <ros2_control name="MujocoSystem" type="system">
+    <hardware>
+      <plugin>mujoco_ros2_control/MujocoSystemInterface</plugin>
+
+      <param name="mujoco_model">$(find hand_description)/mjcf/scene.xml</param>
+      <!-- <param name="pids_config_file">$(find hand_description)/config/pids.yaml</param> -->
+      <param name="sim_speed_factor">1.0</param>
+      <param name="headless">false</param>
+    </hardware>
+
+    <!-- thumb joints -->
+    <joint name="L_thumb_roll_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="L_thumb_abad_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="L_thumb_mcp_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+
+    <!-- index finger joints -->
+    <joint name="L_index_abad_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="L_index_pip_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+
+    <!-- middle finger joints -->
+    <joint name="L_middle_pip_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+
+    <!-- ring finger joints -->
+    <joint name="L_ring_abad_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="L_ring_pip_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+
+    <!-- pinky finger joints -->
+    <joint name="L_pinky_abad_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="L_pinky_pip_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+
+  </ros2_control>
+
+
 </robot>

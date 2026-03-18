@@ -11,7 +11,7 @@
 
   <depend>rclcpp</depend>
   <depend>moveit_ros_planning_interface</depend>
-  <depend>omnihand_node_msgs</depend>
+  <!-- <depend>omnihand_node_msgs</depend> -->
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

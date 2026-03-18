@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(hand_shape)
+project(hand_mujoco_launch)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -8,27 +8,8 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(moveit_ros_planning_interface REQUIRED)
-# find_package(omnihand_node_msgs REQUIRED)
 
-add_executable(hand_shape src/hand_shape.cpp)
-target_include_directories(hand_shape PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
-target_compile_features(hand_shape PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
-ament_target_dependencies(
-  hand_shape
-  "rclcpp"
-  "moveit_ros_planning_interface"
-#   "omnihand_node_msgs"
-)
-
-install(TARGETS hand_shape
-  DESTINATION lib/${PROJECT_NAME})
-
-install(DIRECTORY param launch
-  DESTINATION share/${PROJECT_NAME}
-)
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

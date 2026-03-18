@@ -8,4 +8,18 @@
   <worldbody>
     <light pos="0 0 2"/>
   </worldbody>
+
+  <!-- Mimic joint equality constraints (SDK polynomial mapping) -->
+  <!-- polycoef="a0 a1 a2 a3 a4" => q1 = a0 + a1*q2 + a2*q2^2 + a3*q2^3 + a4*q2^4 -->
+  <equality>
+    <!-- thumb_mcp2pip: {0.0, 1.33} -->
+    <joint joint1="L_thumb_pip_joint" joint2="L_thumb_mcp_joint" polycoef="0 1.33 0 0 0"/>
+    <!-- thumb_mcp2dip(left): {0.0, 1.846, +0.853, 0.280} -->
+    <joint joint1="L_thumb_dip_joint" joint2="L_thumb_mcp_joint" polycoef="0 1.846 0.853 0.280 0"/>
+    <!-- finger_pip2dip: {0.0, 2.192, -1.425, 0.747, -0.167} -->
+    <joint joint1="L_index_dip_joint" joint2="L_index_pip_joint" polycoef="0 2.192 -1.425 0.747 -0.167"/>
+    <joint joint1="L_middle_dip_joint" joint2="L_middle_pip_joint" polycoef="0 2.192 -1.425 0.747 -0.167"/>
+    <joint joint1="L_ring_dip_joint" joint2="L_ring_pip_joint" polycoef="0 2.192 -1.425 0.747 -0.167"/>
+    <joint joint1="L_pinky_dip_joint" joint2="L_pinky_pip_joint" polycoef="0 2.192 -1.425 0.747 -0.167"/>
+  </equality>
 </mujoco>

@@ -49,9 +49,9 @@ public:
         pub_motor_angle_ = this->create_publisher<sensor_msgs::msg::JointState>(
             "/agihand/omnihand/left/motor_angle_cmd", 10);
 
-        // 发布真实关节状态给 MoveIt + robot_state_publisher 16关节
-        pub_joint_states_ = this->create_publisher<sensor_msgs::msg::JointState>(
-            "/joint_states", 10);
+        // // 发布真实关节状态给 MoveIt + robot_state_publisher 16关节 由mujoco反馈回调发布
+        // pub_joint_states_ = this->create_publisher<sensor_msgs::msg::JointState>(
+        //     "/joint_states", 10);
 
         // 订阅mujoco 反馈（真实关节角度 100Hz） 10关节
         sub_motor_angle_ = this->create_subscription<sensor_msgs::msg::JointState>(

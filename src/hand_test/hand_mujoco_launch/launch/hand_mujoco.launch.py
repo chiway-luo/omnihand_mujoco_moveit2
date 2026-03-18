@@ -26,29 +26,30 @@ from launch.conditions import IfCondition #判断是否执行
 # from launch.conditions import UnlessCondition #取反
 # from launch.substitutions import PythonExpression #运行时计算表达式
 # 文件包含相关-------------------
-# from launch.actions import IncludeLaunchDescription
-# from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 # 分组相关----------------------
 # from launch_ros.actions import PushRosNamespace
 # from launch.actions import GroupAction
 # 事件相关----------------------
-# from launch.event_handlers import OnProcessStart, OnProcessExit
+from launch.event_handlers import OnProcessStart, OnProcessExit
 # from launch.actions import ExecuteProcess, RegisterEventHandler,LogInfo
 # 获取功能包下share目录路径-------
 from ament_index_python.packages import get_package_share_directory
 # urdf文件处理相关--------------
 # from launch_ros.parameter_descriptions import ParameterValue
-from launch.substitutions import Command
+# from launch.substitutions import Command
 # 组件相关-------------
 # from launch_ros.actions import ComposableNodeContainer
 # from launch_ros.descriptions import ComposableNode
+from moveit_configs_utils import MoveItConfigsBuilder #从moveit_configs_utils包中导入MoveItConfigsBuilder类，用于加载MoveIt配置
 
 def create_nodes(context):
     namespace = ""
     mujoco_model_path = "/tmp/mujoco_hand"
     mujoco_model_file = os.path.join(mujoco_model_path, "main.xml")
 
-    rviz = LaunchConfiguration("rviz")
+    # rviz = LaunchConfiguration("rviz")
 
     # 读取 URDF（已内嵌 ros2_control MujocoSystemInterface）
     urdf_file = os.path.join(
@@ -131,47 +132,27 @@ def create_nodes(context):
         executable="spawner",
         arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
     )
-    thumb_controller = Node(
+    hand_controller = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["thumb_controller", "--controller-manager", "/controller_manager"],
-    )
-    index_controller = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["index_controller", "--controller-manager", "/controller_manager"],
-    )
-    middle_controller = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["middle_controller", "--controller-manager", "/controller_manager"],
-    )
-    ring_controller = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["ring_controller", "--controller-manager", "/controller_manager"],
-    )
-    little_controller = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["little_controller", "--controller-manager", "/controller_manager"],
+        arguments=["hand_controller", "--controller-manager", "/controller_manager"],
     )
 
     # RViz
-    rviz_config_file = os.path.join(
-        get_package_share_directory("hand_description"),
-        "rviz",
-        "omnihand_left.rviz",
-    )
-    rviz_node = Node(
-        condition=IfCondition(rviz),
-        package="rviz2",
-        executable="rviz2",
-        name="rviz2",
-        output="log",
-        arguments=["-d", rviz_config_file],
-        parameters=[{"use_sim_time": True}],
-    )
+    # rviz_config_file = os.path.join(
+    #     get_package_share_directory("hand_description"),
+    #     "rviz",
+    #     "omnihand_left.rviz",
+    # )
+    # rviz_node = Node(
+    #     condition=IfCondition(rviz),
+    #     package="rviz2",
+    #     executable="rviz2",
+    #     name="rviz2",
+    #     output="log",
+    #     arguments=["-d", rviz_config_file],
+    #     parameters=[{"use_sim_time": True}],
+    # )
 
     # mujoco 启动后加载控制器
     load_controllers = RegisterEventHandler(
@@ -180,12 +161,8 @@ def create_nodes(context):
             on_start=[
                 LogInfo(msg="Starting controllers..."),
                 load_joint_state_broadcaster,
-                thumb_controller,
-                index_controller,
-                middle_controller,
-                ring_controller,
-                little_controller,
-                rviz_node,
+                hand_controller,
+                # rviz_node,
             ],
         )
     )
@@ -201,31 +178,74 @@ def create_nodes(context):
 def generate_launch_description():
     ld = LaunchDescription()
 
-    # mujoco模型文件路径
-    mujoco_model_path = os.path.join(get_package_share_directory("hand_description"),"mjcf")
-    # 模型文件
-    mujoco_model_file = os.path.join(
-        mujoco_model_path,
-        # "my_hand.xml"
-        "scene.xml"
-    )
-
-    # cmd 启动mujoco节点
-    mujoco_gui = ExecuteProcess(
-        cmd=["mujoco", mujoco_model_file],
-        output="screen"
-    )
-    # ld.add_action(mujoco_gui)
 
     # 参数声明
-    ld.add_action(DeclareLaunchArgument(
-            "rviz",
-            default_value="true",
-            description="Start rviz.",
-        ))
+    # ld.add_action(DeclareLaunchArgument(
+    #         "rviz",
+    #         default_value="true",
+    #         description="Start rviz.",
+    #     ))
     
     # 创建节点
     ld.add_action(OpaqueFunction(function=create_nodes))
+
+    # 启动moveit2的launch文件
+    # ========== 加载MoveIt配置 ==========
+    # 使用MoveItConfigsBuilder从hand_moveit功能包中加载所有MoveIt配置
+    # 包括：URDF机器人描述、SRDF语义描述、关节限制、运动学求解器等
+    # "omnihand"为SRDF中定义的机器人名称，"hand_moveit"为配置包名
+    moveit_config = MoveItConfigsBuilder(
+        "omnihand", package_name="hand_moveit"
+    ).to_moveit_configs()
+
+    # 获取hand_moveit功能包的share目录路径，后续用于定位launch和config文件
+    hand_moveit_dir = get_package_share_directory("hand_moveit")
+
+    # ========== 1. 静态TF发布（虚拟关节） ==========
+    # 发布base_link到world之间的静态坐标变换
+    # 该变换在moveit配置助手中定义，用于将机器人固定在世界坐标系中
+    # 如果该launch文件不存在（未配置虚拟关节），则跳过
+    static_tf_launch = os.path.join(
+        hand_moveit_dir, "launch", "static_virtual_joint_tfs.launch.py"
+    )
+    if os.path.exists(static_tf_launch):
+        ld.add_action(
+            IncludeLaunchDescription(
+                launch_description_source=PythonLaunchDescriptionSource(static_tf_launch)
+            )
+        )
+
+    # ========== 5. move_group（MoveIt核心规划节点） ==========
+    # MoveIt的核心节点，提供运动规划、碰撞检测、逆运动学求解等功能
+    # 接收来自RViz交互界面的规划请求，计算无碰撞轨迹
+    # 并通过action接口将轨迹发送给对应的JointTrajectoryController执行
+    ld.add_action(
+        IncludeLaunchDescription(
+            launch_description_source=PythonLaunchDescriptionSource(
+                os.path.join(hand_moveit_dir, "launch", "move_group.launch.py")
+            )
+        )
+    )
+
+    # ========== 6. RViz可视化 ==========
+    # 启动带有MoveIt插件的RViz2，提供交互式运动规划界面
+    # 用户可以在RViz中拖拽目标姿态、执行规划和发送执行指令
+    # 加载hand_moveit中预配置的rviz配置文件
+    ld.add_action(
+        IncludeLaunchDescription(
+            launch_description_source=PythonLaunchDescriptionSource(
+                os.path.join(hand_moveit_dir, "launch", "moveit_rviz.launch.py")
+            )
+        )
+    )
+
+    # =========== 9. hand_shape 手型改变节点========
+    # hand_shape_launch = IncludeLaunchDescription(
+    #     launch_description_source=PythonLaunchDescriptionSource(
+    #         os.path.join(get_package_share_directory("hand_shape"), "launch", "hand_shape.launch.py")
+    #     )
+    # )
+    # ld.add_action(hand_shape_launch)
 
     return ld
 

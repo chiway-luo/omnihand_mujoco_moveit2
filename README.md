@@ -43,4 +43,13 @@ ros2 service call /hand_shape/set_shape omnihand_node_msgs/srv/SetHandShape "{sh
 
 
 
-## 依赖图
+## 关节控制器
+> 目前的控制器配置为一个整体的hand_controller,如果需要单独控制每个手指,可以在`moveit_controllers.yaml`和`ros2_controllers.yaml`中取消注释对应的控制器配置,并在`hand_mujoco.launch.py`中添加对应的控制器spawner节点。
+
+```bash
+ros2 control list_controllers
+
+hand_controller         joint_trajectory_controller/JointTrajectoryController  active
+joint_state_broadcaster joint_state_broadcaster/JointStateBroadcaster          active
+```
+

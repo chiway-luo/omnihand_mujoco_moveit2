@@ -116,11 +116,12 @@ def create_nodes(context):
     # 控制器 spawner（用列表统一管理）
     controller_names = [
         "joint_state_broadcaster",
-        "thumb_controller",
-        "index_controller",
-        "middle_controller",
-        "ring_controller",
-        "little_controller",
+        # "thumb_controller",
+        # "index_controller",
+        # "middle_controller",
+        # "ring_controller",
+        # "little_controller",
+        "hand_controller",
     ]
     controller_spawners = [
         Node(

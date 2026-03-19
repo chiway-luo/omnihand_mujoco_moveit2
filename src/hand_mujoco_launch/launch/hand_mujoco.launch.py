@@ -207,7 +207,10 @@ def generate_launch_description():
         IncludeLaunchDescription(
             launch_description_source=PythonLaunchDescriptionSource(
                 os.path.join(hand_moveit_dir, "launch", "moveit_rviz.launch.py")
-            )
+            ),
+            launch_arguments={
+                "rviz_config": os.path.join(get_package_share_directory("hand_description"), "rviz", "mujoco.rviz")
+            }.items(),
         )
     )
 

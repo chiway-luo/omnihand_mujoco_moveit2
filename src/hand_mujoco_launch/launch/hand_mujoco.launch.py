@@ -1,18 +1,5 @@
-#install(DIRECTORY config params launch DESTINATION share/${PROJECT_NAME}) #cmake配置
-#<exec_depend>ros2launch</exec_depend> <!--package.xml配置-->
-#from glob import glob #用于setup.py配置多个launch文件
-#('share/' + package_name + '/launch', glob('launch/*launch.py')),
-#('share/' + package_name + '/launch', glob('launch/*launch.xml')),
-#('share/' + package_name + '/launch', glob('launch/*launch.yaml')),
-#(os.path.join('share', package_name, 'launch'), glob('launch/*.launch.py')),
-
 from launch import LaunchDescription
-from launch.actions import (
-    DeclareLaunchArgument,
-    LogInfo,
-    RegisterEventHandler,
-    OpaqueFunction,
-)
+from launch.actions import OpaqueFunction #用于在生成launch描述时执行任意Python函数，允许动态创建节点和其他launch元素
 from launch.event_handlers import OnProcessStart, OnProcessExit
 from launch_ros.actions import Node
 import os
@@ -33,12 +20,12 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 # from launch.actions import GroupAction
 # 事件相关----------------------
 from launch.event_handlers import OnProcessStart, OnProcessExit
-# from launch.actions import ExecuteProcess, RegisterEventHandler,LogInfo
+from launch.actions import ExecuteProcess, RegisterEventHandler,LogInfo
 # 获取功能包下share目录路径-------
 from ament_index_python.packages import get_package_share_directory
 # urdf文件处理相关--------------
 # from launch_ros.parameter_descriptions import ParameterValue
-# from launch.substitutions import Command
+from launch.substitutions import Command
 # 组件相关-------------
 # from launch_ros.actions import ComposableNodeContainer
 # from launch_ros.descriptions import ComposableNode
@@ -58,10 +45,8 @@ def create_nodes(context):
         "urdf",
         "omnihand_left.urdf",
     )
-    with open(urdf_file, "r") as f:
-        robot_description_content = f.read()
 
-    robot_description = {"robot_description": robot_description_content}
+    robot_description = Command(["xacro ", urdf_file])
 
     # scene.xml 作为额外输入文件
     additional_files = [
@@ -73,7 +58,7 @@ def create_nodes(context):
         package="mujoco_ros2_control",
         executable="xacro2mjcf.py",
         parameters=[
-            {"robot_descriptions": [robot_description_content]},
+            {"robot_descriptions": robot_description},
             {"input_files": additional_files},
             {"output_file": mujoco_model_file},
             {"mujoco_files_path": mujoco_model_path},
@@ -88,7 +73,7 @@ def create_nodes(context):
         executable="robot_state_publisher",
         name="robot_state_publisher",
         namespace=namespace,
-        parameters=[robot_description],
+        parameters=[{"robot_description": robot_description}],
     )
 
     # ros2_control 控制器配置文件
@@ -104,12 +89,12 @@ def create_nodes(context):
         executable="mujoco_ros2_control",
         namespace=namespace,
         parameters=[
-            robot_description,
+            {"robot_description": robot_description},
             ros2_control_params_file,
-            {"simulation_frequency": 500.0},
-            {"realtime_factor": 1.0},
+            {"simulation_frequency": 500.0}, # 仿真频率，单位Hz，越高越精细但CPU占用越大
+            {"realtime_factor": 1.0}, # 时间因子
             {"robot_model_path": mujoco_model_file},
-            {"show_gui": True},
+            {"show_gui": True}, # 是否显示GUI
         ],
         remappings=[
             ("/controller_manager/robot_description", "/robot_description"),
@@ -127,53 +112,25 @@ def create_nodes(context):
         )
     )
 
-    # 控制器 spawner
-    load_joint_state_broadcaster = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
-    )
-    thumb_controller = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["thumb_controller", "--controller-manager", "/controller_manager"],
-    )
-    index_controller = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["index_controller", "--controller-manager", "/controller_manager"],
-    )
-    middle_controller = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["middle_controller", "--controller-manager", "/controller_manager"],
-    )
-    ring_controller = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["ring_controller", "--controller-manager", "/controller_manager"],
-    )
-    little_controller = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["little_controller", "--controller-manager", "/controller_manager"],
-    )
-
-    # RViz
-    # rviz_config_file = os.path.join(
-    #     get_package_share_directory("hand_description"),
-    #     "rviz",
-    #     "omnihand_left.rviz",
-    # )
-    # rviz_node = Node(
-    #     condition=IfCondition(rviz),
-    #     package="rviz2",
-    #     executable="rviz2",
-    #     name="rviz2",
-    #     output="log",
-    #     arguments=["-d", rviz_config_file],
-    #     parameters=[{"use_sim_time": True}],
-    # )
+    
+    # 控制器 spawner（用列表统一管理）
+    controller_names = [
+        "joint_state_broadcaster",
+        "thumb_controller",
+        "index_controller",
+        "middle_controller",
+        "ring_controller",
+        "little_controller",
+    ]
+    controller_spawners = [
+        Node(
+            package="controller_manager",
+            executable="spawner",
+            arguments=[name, "--controller-manager", "/controller_manager"],
+        )
+        for name in controller_names
+    ]
+    
 
     # mujoco 启动后加载控制器
     load_controllers = RegisterEventHandler(
@@ -181,12 +138,7 @@ def create_nodes(context):
             target_action=mujoco,
             on_start=[
                 LogInfo(msg="Starting controllers..."),
-                load_joint_state_broadcaster,
-                thumb_controller,
-                index_controller,
-                middle_controller,
-                ring_controller,
-                little_controller,
+                *controller_spawners
             ],
         )
     )
@@ -205,13 +157,6 @@ def generate_launch_description():
     # 全局设置 use_sim_time，所有节点都使用仿真时钟
     ld.add_action(SetParameter(name="use_sim_time", value=True))
 
-
-    # 参数声明
-    # ld.add_action(DeclareLaunchArgument(
-    #         "rviz",
-    #         default_value="true",
-    #         description="Start rviz.",
-    #     ))
     
     # 创建节点
     ld.add_action(OpaqueFunction(function=create_nodes))

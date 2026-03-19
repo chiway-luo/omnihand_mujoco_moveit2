@@ -53,3 +53,11 @@ hand_controller         joint_trajectory_controller/JointTrajectoryController  a
 joint_state_broadcaster joint_state_broadcaster/JointStateBroadcaster          active
 ```
 
+## 作者提示
+> 请确保电脑性能足够,因为同时运行mujoco仿真和moveit路径规划可能会占用较多资源。建议在运行前关闭其他占用资源的程序，以获得更流畅的体验。
+
+> 如果在运行过程中遇到任何问题，请检查ROS2和MoveIt2的安装是否正确，并确保所有依赖项都已满足。可以参考ROS2和MoveIt2的官方文档获取更多帮助。
+
+> 欢迎在gihub上提交issue或pull request，以帮助改进项目！
+
+> Email: chiwayfpv@gmail.com 

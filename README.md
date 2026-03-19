@@ -6,7 +6,9 @@
 
 > 项目集成了手部模型描述、MoveIt2 规划配置、MuJoCo 仿真启动、手型服务转换以及控制接口，适用于灵巧手动作规划、手型切换与仿真验证。
 
-![](.doc/image/image.jpg)
+
+<video src="https://github.com/user-attachments/assets/5eac4ab7-fb61-4218-af0c-b66531f1a26a" controls="controls" width="600">
+</video>
 
 ## 系统要求
 - ROS2 Humble

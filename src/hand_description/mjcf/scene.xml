@@ -1,12 +1,27 @@
 <mujoco model="my_hand_scene">
   <!-- <include file="my_hand.xml"/> -->
 
+  <option timestep="0.005"/>
+
+  <statistic center="0 0 0.05" extent="0.30"/>
+
   <visual>
-    <headlight diffuse="0.8 0.8 0.8" ambient="0.2 0.2 0.2" specular="0.1 0.1 0.1"/>
+    <map force="0.1" zfar="10"/> <!-- 视觉选项：force 影响视觉效果的强度，zfar 设置远裁剪面距离 -->
+    <rgba haze="0.15 0.25 0.35 1"/> <!-- 雾的颜色 -->
+    <global offwidth="2560" offheight="1440" elevation="-20" azimuth="180"/>
+    <headlight diffuse="1 1 1" specular="0.5 0.5 0.5" active="1"/>
   </visual>
 
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1=".3 .5 .7" rgb2="0 0 0" width="32" height="512"/>
+    <texture name="grid" type="2d" builtin="checker" width="512" height="512" rgb1=".1 .2 .3" rgb2=".2 .3 .4"/>
+    <material name="grid" texture="grid" texrepeat="1 1" texuniform="true" reflectance=".2"/>
+  </asset>
+
   <worldbody>
-    <light pos="0 0 2"/>
+    <geom name="floor" size="0 0 .05" type="plane" material="grid" condim="3"/>
+    <light name="spotlight" pos="0 -2 2" diffuse=".8 .8 .8" specular="0.3 0.3 0.3"/>
+    <light name="top" pos="0 0 2"/>
   </worldbody>
 
   <!-- Mimic joint equality constraints (SDK polynomial mapping) -->
